@@ -1,15 +1,15 @@
 <?php
   /**
    * @package 8digits
-   * @version 1.0
+   * @version 0.3
    */
   /*
   Plugin Name: 8digits
   Plugin URI: http://wordpress.org/plugins/8digits/
   Description: Plugin for 8digits.com to integrate your woocommerce store with 8digits easily!
   Author: 8digits
-  Version: 1.0
-  Author URI: http://www.8digits.com/
+  Version: 0.3
+  Author URI: http://beta.8digits.com/
   */
 
   if(!defined('ABSPATH')) {
@@ -49,7 +49,7 @@
       /**
        * @var string
        */
-      private $_8digitsInterface = 'http://www.8digits.com';
+      private $_8digitsInterface = 'http://beta.8digits.com';
 
       /**
        * @var string
