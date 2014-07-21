@@ -48,11 +48,17 @@ If you contact with our support, you can get more details about 8digits.com API.
 
 == Screenshots ==
 
-1. This screen shot shows the plugin page, when you do not have defined your 8digits tracking code on your plugin.
-2. This is the screen after your 8digits tracking code is stored on WordPress. On this page you can see links to
+1. Easy to set-up predefined campaings
+2. Completely customizable campaign pop-ups
+3. Performance Analytics Tracking
+4. This screen shot shows the plugin page, when you do not have defined your 8digits tracking code on your plugin.
+5. This is the screen after your 8digits tracking code is stored on WordPress. On this page you can see links to
 maintain your 8digits profile.
 
 == Changelog ==
+
+= 1.0.1 =
+* Add data layer to be used in campaign actions
 
 = 1.0 =
 * Initial Release - Updates location to production environment
@@ -61,6 +67,9 @@ maintain your 8digits profile.
 * Initial Beta Release
 
 == Upgrade Notice ==
+
+= 1.0.1 =
+Adds data layer on cart data to be used in campaign actions
 
 = 1.0 =
 Initial Production Release - Updates location to production environment

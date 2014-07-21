@@ -1,14 +1,14 @@
 <?php
   /**
    * @package 8digits
-   * @version 1.0
+   * @version 1.0.1
    */
   /*
   Plugin Name: 8digits
   Plugin URI: http://wordpress.org/plugins/8digits/
   Description: Plugin for 8digits.com to integrate your woocommerce store with 8digits easily!
   Author: 8digits
-  Version: 1.0
+  Version: 1.0.1
   Author URI: http://www.8digits.com/
   */
 
@@ -29,7 +29,7 @@
       /**
        * @var string
        */
-      public static $version = '0.3';
+      public static $version = '1.0.1';
 
       /**
        * @var EightDigits instance of class
@@ -315,37 +315,69 @@ EOD;
         } else if(is_product()) {
 
         } else if(is_cart()) {
-          $basketSize = $woocommerce->cart->total;
-
+          
           $cartItems = $woocommerce->cart->get_cart();
-          $cartItemsCount = $woocommerce->cart->get_cart_contents_count();
+          if (empty($cartItems) || !is_array($cartItems)) break;
+          
+          $dataLayer = array(
+			'price' => "".$woocommerce->cart->total,
+			'itemCount' => "".$woocommerce->cart->get_cart_contents_count(),
+			'products' => array()
+		  );
 
           $products  = array();
-
+			
           foreach($cartItems AS $key => $item) {
-            $product    = $item['data'];
-            $products[] = $product->get_title() . ' - ' . $product->get_sale_price() . ' ' . $product->get_price_suffix() . ' - ' . $product->get_permalink();
+            $product = $item['data'];
+            
+            if (empty($products[$product->get_sku()])) {
+            	$terms = get_the_terms( $product->id, 'product_cat' );
+            	$categories = array();
+            	foreach ( $terms as $term ){
+    				$categories[] = $term->name;
+    			}
+            	
+				// Build all fields the first time we encounter this item.
+				$products[$product->get_sku()] = array(
+					'name' => $product->get_title(),
+					'sku' => $product->get_sku(),
+					'category' => implode('|',$categories),
+					'price' => (double)number_format($product->get_sale_price(),2,'.',''),
+					'quantity' => (int)$item['quantity']
+				);
+		  	} else {
+				// If we already have the item, update quantity.
+				$products[$product->get_sku()]['quantity'] += (int)$item['quantity'];
+		  	}
           }
+          
+          // Push products into main data array.
+		  foreach ($products as $product) {
+			$dataLayer['products'][] = $product;
+		  }
 
-          $products = join("<br/>", $products);
+		  // Trim empty fields from the final output.
+		  foreach ($dataLayer as $key => $value) {
+			if (!is_numeric($value) && empty($value)) unset($dataLayer[$key]);
+		  }
+		  
+		  if (!empty($dataLayer)) {
+		  	$attributeList = json_encode($dataLayer);
+		  	
+          	$this->_extraCodeBefore = <<<EOF
+          	<script type="text/javascript">
+          		var EightDigitsData = $attributeList;
+          		
+            	function EightDigitsReady() {
+              		EightDigits.setAttributes($attributeList);
 
-          $this->_extraCodeBefore = <<<EOF
-          <script type="text/javascript">
-            function EightDigitsReady() {
-              EightDigits.setAttributes({
-                products: '$products',
-                price: '$basketSize',
-                itemCount: '$cartItemsCount'
-              });
-
-              setTimeout(function() {
-                EightDigits.event({ key: 'CartDisplayed', noPath: true });
-              }, 500);
-
-            }
-          </script>
+              		setTimeout(function() {
+                		EightDigits.event({ key: 'CartDisplayed', noPath: true });
+              		}, 500);
+				}
+          	</script>
 EOF;
-
+		  }
         } else if(is_checkout()) {
           $this->_extraCodeBefore = <<<EOF
           <script type="text/javascript">
