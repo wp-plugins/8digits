@@ -1,14 +1,14 @@
 <?php
   /**
    * @package 8digits
-   * @version 1.0.1
+   * @version 1.1
    */
   /*
   Plugin Name: 8digits
   Plugin URI: http://wordpress.org/plugins/8digits/
   Description: Plugin for 8digits.com to integrate your woocommerce store with 8digits easily!
   Author: 8digits
-  Version: 1.0.1
+  Version: 1.1
   Author URI: http://www.8digits.com/
   */
 
@@ -29,7 +29,7 @@
       /**
        * @var string
        */
-      public static $version = '1.0.1';
+      public static $version = '1.1';
 
       /**
        * @var EightDigits instance of class
@@ -143,20 +143,33 @@
             'label' => 'Type your Tracking Code here.'
           )
         );
+        
+        add_settings_field(
+          'eightdigits_access_token',
+          'Access Token',
+          array($this, 'textFieldRenderer'),
+          '8digits',
+          'eightdigits_setting_section',
+          array(
+            'id'    => 'eightdigits_access_token',
+            'label' => 'Type your Access Token here.'
+          )
+        );
 
-          add_settings_field(
-              'eightdigits_installation_notified',
-              '',
-              array($this, 'hiddenFieldRenderer'),
-              '8digits',
-              'eightdigits_setting_section',
-              array(
-                  'name'    => 'eightdigits_installation_notified',
-                  'default' => '1'
-              )
-          );
+        add_settings_field(
+            'eightdigits_installation_notified',
+            '',
+            array($this, 'hiddenFieldRenderer'),
+            '8digits',
+            'eightdigits_setting_section',
+            array(
+                'name'    => 'eightdigits_installation_notified',
+                'default' => '1'
+            )
+        );
 
         register_setting('8digits', 'eightdigits_tracking_code');
+        register_setting('8digits', 'eightdigits_access_token');
         register_setting('8digits', 'eightdigits_installation_notified');
       }
 
@@ -164,7 +177,70 @@
        *
        */
       public function pluginMenu() {
-         add_menu_page('8digits', '8digits', 'manage_options', '8digits', array($this, 'optionsPage'));
+         add_menu_page('8digits', '8digits', 'manage_options', '8digits', array($this, 'adminPage'));
+      }
+      
+      public function styleRenderer() {
+      	$output = '<style>' . PHP_EOL;
+		$output .= '.eightdigits-app-iframe {bottom: 0;box-sizing: border-box;height: 100%;left: 0;position: absolute;';
+		$output .= 'right: 0;top: 0;width: 100%;min-height: 575px;max-height: 800px;}' . PHP_EOL;
+		$output .= '.eightdigits-error {color: red;}' . PHP_EOL;
+		$output .= '</style>';
+		
+		echo $output;
+      
+      }
+      
+      public function adminPage() {
+      	$adminEmail = get_option('admin_email');
+		$siteUrl = get_option('siteurl');
+      	$trackingCode = get_option('eightdigits_tracking_code');
+		$accessToken = get_option('eightdigits_access_token');
+		
+		$error = '';
+		if (empty($trackingCode) || empty($accessToken)) {
+			// new installation: create profile and access token
+			// create url
+			$url = $this->_8digitsInterface . '/frame/auth';
+			$url .= '?shop=' . $siteUrl;
+			$url .= '&token=' . $accessToken;
+			$url .= '&trackingCode=' . $trackingCode;
+			$url .= '&email=' . urlencode($adminEmail);  // user may have + in email address
+			$url .= '&type=woocommerce';
+			
+			// var_dump($url);
+			$response = wp_remote_get($url, array( 'timeout' => 120));
+			// var_dump($response);
+			if ( !is_wp_error( $response ) ) {
+				$data = wp_remote_retrieve_body( $response );
+				
+				if ( !is_wp_error( $data ) ) {
+					$result = json_decode($data, true);
+					if ($result['status']) {
+						$trackingCode = $result['trackingCode'];
+						$accessToken = $result['accessToken'];
+						
+						update_option('eightdigits_tracking_code', $trackingCode);
+						update_option('eightdigits_access_token', $accessToken);
+					} else {
+						$error .= '<p class="eightdigits-error">' . $result['error'] . '</p>';
+					}
+				}
+			}
+			
+		}
+		
+		// echo page output
+		$this->styleRenderer();
+		if (!empty($trackingCode) && !empty($accessToken)) {
+			$this->iframePage();
+		} else {
+			if (!empty($error)) {
+				echo $error;
+			}
+			$this->optionsPage();
+		}
+		$this->renderNotifyScript();
       }
 
       /**
@@ -179,40 +255,20 @@
         submit_button();
         echo '</form>';
         echo '</div>';
+        
       }
-
-      /**
-       * Renders section header for settings
-       */
-      public function accountSettingsSectionRenderer() {
-          $trackingCode = get_option('eightdigits_tracking_code');
-
-          $output = '';
-
-          if (!($trackingCode)) {
-              $output .= '<p>To activate 8digits, type in your tracking code and save changes.</p>';
-              $output .= '<ul>';
-              $output .= '<li>If you have not registered with 8digits yet please <a href="' . $this->_8digitsInterface . '/index/signup/woocommerce" target="_blank" class="button-primary">sign up now</a></li>';
-              $output .= '<li>If you already have an account but you do not remember your tracking code please visit our <a href="' . $this->_8digitsInterface . '/index/login/woocommerceIntegration" target="_blank" class="button-primary">integration page</a></li>';
-              $output .= '</ul>';
-          } else {
-              $output .= '<p><a href="' . $this->_8digitsInterface . '/index/login/woocommerceSolutions" target="_blank" class="button-primary">Run Campaigns</a></p>';
-              $output .= '<p><a href="' . $this->_8digitsInterface . '/index/login/woocommerceDashboard" target="_blank" class="button-primary">Track Campaigns</a></p>';
-          }
-
-          /**
-           *  Renders notification script
-           *  This is for 8digits to be notified on new installations
-           *  and offer support to find the best ways to run solutions
-           *  for your site.
-           */
+      
+      
+     /**
+      *  Renders notification script
+      *  This is for 8digits to be notified on new installations
+      *  and offer support to find the best ways to run solutions
+      *  for your site.
+      */
+      public function renderNotifyScript() {
           $notified = get_option('eightdigits_installation_notified');
 
           if (!($notified)) {
-
-              $adminEmail = get_option('admin_email');
-              $siteUrl = get_option('siteurl');
-
               $output .= <<<EOD
               <script type='text/javascript'>
                 if(typeof jQuery!="undefined") {
@@ -236,6 +292,36 @@ EOD;
 
           echo $output;
       }
+      
+      public function iframePage() {
+      	$adminEmail = get_option('admin_email');
+		$siteUrl = get_option('siteurl');
+		$trackingCode = get_option('eightdigits_tracking_code');
+		$accessToken = get_option('eightdigits_access_token');
+		
+		$output = '<iframe name="eightdigits-app-iframe" class="eightdigits-app-iframe" frameborder="0" src="';
+		$output .= $this->_8digitsInterface . '/frame/auth';
+		$output .= '?shop=' . $siteUrl;
+		$output .= '&token=' . $accessToken;
+		$output .= '&trackingCode=' . $trackingCode;
+		$output .= '&email=' . urlencode($adminEmail); // user may have + in email address
+		$output .= '&type=woocommerce"></iframe>';
+		
+		echo $output;
+      }
+      
+      /**
+       * Renders section header for settings
+       */
+      public function accountSettingsSectionRenderer() {
+          $output = '<p>To activate 8digits, type in your tracking code and access token, and save changes.</p>';
+          $output .= '<ul>';
+          $output .= '<li>If you have not registered with 8digits yet please <a href="' . $this->_8digitsInterface . '/index/signup/woocommerce" target="_blank" class="button-primary">sign up now</a></li>';
+          $output .= '<li>If you already have an account but you do not remember your tracking code or access token please visit your <a href="' . $this->_8digitsInterface . '/index/login/woocommerceIntegration" target="_blank" class="button-primary">integration page</a></li>';
+          $output .= '</ul>';
+
+          echo $output;
+      }
 
       /**
        * Renders input box for option
@@ -247,7 +333,7 @@ EOD;
         $id    = $args['id'];
         $label = $args['label'];
 
-        echo '<input name="' . $id . '" id="' . $id . '" type="text" value="' . get_option($id) . '" /> ' . $label;
+        echo '<input name="' . $id . '" id="' . $id . '" type="text" style="width:300px" value="' . get_option($id) . '" /> ' . $label;
       }
 
 
