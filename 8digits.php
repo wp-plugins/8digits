@@ -1,14 +1,14 @@
 <?php
   /**
    * @package 8digits
-   * @version 1.1
+   * @version 1.1.1
    */
   /*
   Plugin Name: 8digits
   Plugin URI: http://wordpress.org/plugins/8digits/
   Description: Plugin for 8digits.com to integrate your woocommerce store with 8digits easily!
   Author: 8digits
-  Version: 1.1
+  Version: 1.1.1
   Author URI: http://www.8digits.com/
   */
 
@@ -29,7 +29,7 @@
       /**
        * @var string
        */
-      public static $version = '1.1';
+      public static $version = '1.1.1';
 
       /**
        * @var EightDigits instance of class
@@ -182,9 +182,10 @@
       
       public function styleRenderer() {
       	$output = '<style>' . PHP_EOL;
-		$output .= '.eightdigits-app-iframe {bottom: 0;box-sizing: border-box;height: 100%;left: 0;position: absolute;';
-		$output .= 'right: 0;top: 0;width: 100%;min-height: 575px;max-height: 800px;}' . PHP_EOL;
+		$output .= '.eightdigits-app-iframe {bottom: 0;box-sizing: border-box;height: 100%;';
+		$output .= 'width: 100%;min-height: 575px;height: 100%;}' . PHP_EOL;
 		$output .= '.eightdigits-error {color: red;}' . PHP_EOL;
+		$output .= '#wpwrap {height: 100%; min-height: auto !important;}' . PHP_EOL;
 		$output .= '</style>';
 		
 		echo $output;

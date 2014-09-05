@@ -54,6 +54,9 @@ If you contact with our support, you can get more details about 8digits.com API.
 
 == Changelog ==
 
+= 1.1.1 =
+* Style changes to show whole page on Wordpress admin panel
+
 = 1.1 =
 * Include 8digits interface within iframe on Wordpress admin panel
 
@@ -68,8 +71,11 @@ If you contact with our support, you can get more details about 8digits.com API.
 
 == Upgrade Notice ==
 
+= 1.1.1 =
+Changes style to show whole page on Wordpress admin panel
+
 = 1.1 =
-* Include 8digits interface within iframe on Wordpress admin panel
+Includes 8digits interface within iframe on Wordpress admin panel
 
 = 1.0.1 =
 Adds data layer on cart data to be used in campaign actions
