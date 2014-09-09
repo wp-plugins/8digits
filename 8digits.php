@@ -1,14 +1,14 @@
 <?php
   /**
    * @package 8digits
-   * @version 1.1.1
+   * @version 1.1.2
    */
   /*
   Plugin Name: 8digits
   Plugin URI: http://wordpress.org/plugins/8digits/
   Description: Plugin for 8digits.com to integrate your woocommerce store with 8digits easily!
   Author: 8digits
-  Version: 1.1.1
+  Version: 1.1.2
   Author URI: http://www.8digits.com/
   */
 
@@ -29,7 +29,7 @@
       /**
        * @var string
        */
-      public static $version = '1.1.1';
+      public static $version = '1.1.2';
 
       /**
        * @var EightDigits instance of class
@@ -95,8 +95,10 @@
          */
         add_action('the_post', array($this, 'view'));
 
-        register_activation_hook(__FILE__, array($this, 'activate'));
-        register_deactivation_hook(__FILE__, array($this, 'deactivate'));
+        // register hooks
+        register_activation_hook(__FILE__, array($this, 'pluginActivate'));
+        register_deactivation_hook(__FILE__, array($this, 'pluginDeactivate'));
+        register_uninstall_hook(__FILE__, array($this, 'pluginUninstall'));
       }
 
       /**
@@ -108,17 +110,27 @@
       }
 
       /**
-       *
+       * Callback function runs when plugin is activated
        */
-      public function activate() {
-
+      public function pluginActivate() {
+	  	update_option('eightdigits_active', true);
       }
 
       /**
-       *
+       * Callback function runs when plugin is deactivated
        */
-      public function deactivate() {
-
+      public function pluginDeactivate() {
+		update_option('eightdigits_active', false);
+      }
+      
+      /**
+       * Callback function runs when plugin is uninstalled
+       */
+      public function pluginUninstall() {
+		delete_option('eightdigits_active');
+		delete_option('eightdigits_tracking_code');
+        delete_option('eightdigits_access_token');
+        delete_option('eightdigits_installation_notified');
       }
 
       /**
@@ -404,7 +416,7 @@ EOD;
         } else if(is_cart()) {
           
           $cartItems = $woocommerce->cart->get_cart();
-          if (empty($cartItems) || !is_array($cartItems)) break;
+          if (empty($cartItems) || !is_array($cartItems)) return;
           
           $dataLayer = array(
 			'price' => "".$woocommerce->cart->total,
@@ -510,15 +522,13 @@ EOF;
             }
           </script>
 EOF;
-
-        }
-
-      }
-    }
+        } // if(is_shop()) else if(is_order_received_page()) 
+      } // function view
+    } // class EightDigits
 
     EightDigits::instance();
 
-  }
+  } // if(!class_exists('EightDigits') && ED_IS_WOO_ENABLED)
 
 
 

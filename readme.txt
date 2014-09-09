@@ -54,6 +54,9 @@ If you contact with our support, you can get more details about 8digits.com API.
 
 == Changelog ==
 
+= 1.1.2 =
+* Clear plugin specific options on uninstallation
+
 = 1.1.1 =
 * Style changes to show whole page on Wordpress admin panel
 
@@ -70,6 +73,9 @@ If you contact with our support, you can get more details about 8digits.com API.
 * Initial Beta Release
 
 == Upgrade Notice ==
+
+= 1.1.2 =
+Clears plugin specific options on uninstallation
 
 = 1.1.1 =
 Changes style to show whole page on Wordpress admin panel
