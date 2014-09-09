@@ -54,6 +54,9 @@ If you contact with our support, you can get more details about 8digits.com API.
 
 == Changelog ==
 
+= 1.1.3 =
+* Use of uninstall.php when uninstall_hook is not supported
+
 = 1.1.2 =
 * Clear plugin specific options on uninstallation
 
@@ -73,6 +76,9 @@ If you contact with our support, you can get more details about 8digits.com API.
 * Initial Beta Release
 
 == Upgrade Notice ==
+
+= 1.1.3 = 
+Uses uninstall.php when uninstall_hook is not supported
 
 = 1.1.2 =
 Clears plugin specific options on uninstallation

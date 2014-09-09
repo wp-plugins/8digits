@@ -1,14 +1,14 @@
 <?php
   /**
    * @package 8digits
-   * @version 1.1.2
+   * @version 1.1.3
    */
   /*
   Plugin Name: 8digits
   Plugin URI: http://wordpress.org/plugins/8digits/
   Description: Plugin for 8digits.com to integrate your woocommerce store with 8digits easily!
   Author: 8digits
-  Version: 1.1.2
+  Version: 1.1.3
   Author URI: http://www.8digits.com/
   */
 
@@ -29,7 +29,7 @@
       /**
        * @var string
        */
-      public static $version = '1.1.2';
+      public static $version = '1.1.3';
 
       /**
        * @var EightDigits instance of class
@@ -98,7 +98,8 @@
         // register hooks
         register_activation_hook(__FILE__, array($this, 'pluginActivate'));
         register_deactivation_hook(__FILE__, array($this, 'pluginDeactivate'));
-        register_uninstall_hook(__FILE__, array($this, 'pluginUninstall'));
+        if ( function_exists('register_uninstall_hook') )
+        	register_uninstall_hook(__FILE__, array($this, 'pluginUninstall'));
       }
 
       /**
