@@ -1,14 +1,14 @@
 <?php
   /**
    * @package 8digits
-   * @version 1.1.3
+   * @version 1.1.4
    */
   /*
   Plugin Name: 8digits
   Plugin URI: http://wordpress.org/plugins/8digits/
   Description: Plugin for 8digits.com to integrate your woocommerce store with 8digits easily!
   Author: 8digits
-  Version: 1.1.3
+  Version: 1.1.4
   Author URI: http://www.8digits.com/
   */
 
@@ -29,7 +29,7 @@
       /**
        * @var string
        */
-      public static $version = '1.1.3';
+      public static $version = '1.1.4';
 
       /**
        * @var EightDigits instance of class
@@ -420,7 +420,7 @@ EOD;
           if (empty($cartItems) || !is_array($cartItems)) return;
           
           $dataLayer = array(
-			'price' => "".$woocommerce->cart->total,
+			'price' => "".$woocommerce->cart->cart_contents_total,
 			'itemCount' => "".$woocommerce->cart->get_cart_contents_count(),
 			'products' => array()
 		  );
@@ -436,13 +436,19 @@ EOD;
             	foreach ( $terms as $term ){
     				$categories[] = $term->name;
     			}
+    			
+    			$productPrice = $product->get_price();
+    			if (empty($productPrice)) {
+    				$productPrice = $product->get_regular_price();
+    				if (empty($productPrice)) $productPrice = $product->get_sale_price();
+    			}
             	
 				// Build all fields the first time we encounter this item.
 				$products[$product->get_sku()] = array(
 					'name' => $product->get_title(),
 					'sku' => $product->get_sku(),
 					'category' => implode('|',$categories),
-					'price' => (double)number_format($product->get_sale_price(),2,'.',''),
+					'price' => (double)number_format($productPrice, 2, '.', ''),
 					'quantity' => (int)$item['quantity']
 				);
 		  	} else {

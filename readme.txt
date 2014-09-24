@@ -54,6 +54,9 @@ If you contact with our support, you can get more details about 8digits.com API.
 
 == Changelog ==
 
+= 1.1.4 =
+* Price info, which is sent on cart page, has been fixed to support different pricing.
+
 = 1.1.3 =
 * Use of uninstall.php when uninstall_hook is not supported
 
@@ -76,6 +79,9 @@ If you contact with our support, you can get more details about 8digits.com API.
 * Initial Beta Release
 
 == Upgrade Notice ==
+
+= 1.1.4 =
+Fixes price info, which is sent on cart page.
 
 = 1.1.3 = 
 Uses uninstall.php when uninstall_hook is not supported
